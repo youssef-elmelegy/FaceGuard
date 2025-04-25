@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "functions": {
+    "api/detect-faces.js": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
+  "builds": [{ "src": "api/detect-faces.js", "use": "@vercel/node" }],
+  "routes": [{ "src": "/api/detect-faces", "dest": "/api/detect-faces.js" }]
+}
