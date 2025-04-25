@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>FaceGuard - Recognition System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ======================================
+         CSS Variables for Theme Management
+         ====================================== */
+      :root {
+        /* Color Palette */
+        --primary: #f9f6f1; /* Light cream background */
+        --primary-dark: #e9e6e1; /* Slightly darker cream */
+        --accent: #00a82e; /* Green accent */
+        --accent-light: #00c837; /* Lighter green */
+        --accent-dark: #008f26; /* Darker green */
+        --accent-transparent: rgba(0, 168, 46, 0.2); /* Transparent green */
+        --accent-glow: 0 0 15px rgba(0, 168, 46, 0.4);
+
+        /* Text Colors */
+        --text-dark: #333333;
+        --text-light: #ffffff;
+        --text-muted: #666666;
+
+        /* Background Colors */
+        --bg-color: var(--primary);
+        --header-bg: var(--primary);
+        --card-bg: rgba(249, 246, 241, 0.9);
+
+        /* UI Elements */
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-strong: 0 8px 16px rgba(0, 0, 0, 0.15);
+        --border-radius: 8px;
+        --button-radius: 50%;
+        --transition: all 300ms ease;
+
+        /* Spacing */
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+
+        /* Container Widths */
+        --container-max-width: 1200px;
+        --button-size: 50px;
+      }
+
+      /* ======================================
+         Base Styles
+         ====================================== */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background: var(--bg-color);
+        color: var(--text-dark);
+        min-height: 100vh;
+        padding-top: 70px; /* Space for fixed header */
+        overflow-x: hidden;
+      }
+
+      /* ======================================
+         Header Styles
+         ====================================== */
+      .header {
+        background: var(--header-bg);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        padding: 0 var(--spacing-lg);
+        box-shadow: var(--shadow);
+        z-index: 1000;
+        border-bottom: 2px solid var(--accent);
+      }
+
+      .logo-container {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+      }
+
+      .logo {
+        height: 36px;
+        width: 36px;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        fill: var(--accent);
+      }
+
+      .logo-container h1 {
+        color: var(--accent);
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+
+      /* ======================================
+         Main Container
+         ====================================== */
+      .container {
+        max-width: var(--container-max-width);
+        margin: 0 auto;
+        padding: var(--spacing-lg);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-lg);
+      }
+
+      /* ======================================
+         Video Container and Controls Layout
+         ====================================== */
+      .video-section {
+        position: relative;
+        display: flex;
+        width: 100%;
+      }
+
+      .video-controls {
+        position: absolute;
+        left: var(--spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+        z-index: 20;
+      }
+
+      /* ======================================
+         Video Container Styles
+         ====================================== */
+      .video-container {
+        position: relative;
+        width: 100%;
+        background-color: var(--primary-dark);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        border: 2px solid var(--accent);
+        transition: var(--transition);
+      }
+
+      /* Create 16:9 aspect ratio */
+      .video-container::before {
+        content: "";
+        display: block;
+        padding-top: 56.25%; /* 16:9 aspect ratio */
+      }
+
+      #video,
+      #canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: var(--border-radius);
+      }
+
+      #canvas {
+        z-index: 10;
+      }
+
+      /* ======================================
+         Button Styles - Circular with Green Border
+         ====================================== */
+      button {
+        width: var(--button-size);
+        height: var(--button-size);
+        background-color: transparent;
+        color: var(--accent);
+        border: 2px solid var(--accent);
+        border-radius: var(--button-radius);
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+      }
+
+      button::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        background: var(--accent-transparent);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        transition: transform 0.3s ease;
+      }
+
+      button:hover {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-strong);
+        border-color: var(--accent-light);
+        color: var(--accent-light);
+      }
+
+      button:hover::after {
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      button:active {
+        transform: scale(0.95);
+      }
+
+      button:active::after {
+        background: var(--accent-transparent);
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+      }
+
+      button:disabled {
+        border-color: var(--text-muted);
+        color: var(--text-muted);
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      button:disabled::after {
+        display: none;
+      }
+
+      /* ======================================
+         Status Indicators
+         ====================================== */
+      #datasetStatus {
+        background-color: var(--card-bg);
+        border-left: 4px solid var(--accent);
+        padding: var(--spacing-md);
+        border-radius: var(--border-radius);
+        margin-top: var(--spacing-md);
+        color: var(--text-dark);
+        box-shadow: var(--shadow);
+      }
+
+      .status-message {
+        background-color: var(--card-bg);
+        color: var(--text-dark);
+        padding: var(--spacing-md);
+        border-radius: var(--border-radius);
+        margin-bottom: var(--spacing-md);
+        animation: fadeIn 300ms ease;
+        border-left: 4px solid var(--accent);
+        box-shadow: var(--shadow);
+      }
+
+      .face-counter {
+        position: absolute;
+        top: var(--spacing-md);
+        right: var(--spacing-md);
+        background-color: var(--accent);
+        color: var(--text-light);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        z-index: 20;
+        box-shadow: var(--shadow);
+      }
+
+      /* ======================================
+         Loading Animation
+         ====================================== */
+      .loading-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: var(--spacing-lg);
+      }
+
+      .loading {
+        display: inline-block;
+        position: relative;
+        width: 80px;
+        height: 80px;
+      }
+
+      .loading div {
+        position: absolute;
+        top: 33px;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation-timing-function: cubic-bezier(0, 1, 1, 0);
+      }
+
+      .loading div:nth-child(1) {
+        left: 8px;
+        animation: loading1 0.6s infinite;
+      }
+
+      .loading div:nth-child(2) {
+        left: 8px;
+        animation: loading2 0.6s infinite;
+      }
+
+      .loading div:nth-child(3) {
+        left: 32px;
+        animation: loading2 0.6s infinite;
+      }
+
+      .loading div:nth-child(4) {
+        left: 56px;
+        animation: loading3 0.6s infinite;
+      }
+
+      /* ======================================
+         Card Styles for Additional Elements
+         ====================================== */
+      .card {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--accent-transparent);
+      }
+
+      .card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: var(--spacing-md);
+        color: var(--accent);
+      }
+
+      /* ======================================
+         Animations
+         ====================================== */
+      @keyframes loading1 {
+        0% {
+          transform: scale(0);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes loading2 {
+        0% {
+          transform: translate(0, 0);
+        }
+        100% {
+          transform: translate(24px, 0);
+        }
+      }
+
+      @keyframes loading3 {
+        0% {
+          transform: scale(1);
+        }
+        100% {
+          transform: scale(0);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(0, 168, 46, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(0, 168, 46, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(0, 168, 46, 0);
+        }
+      }
+
+      /* ======================================
+         Utility Classes
+         ====================================== */
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      .text-accent {
+        color: var(--accent);
+      }
+
+      .mt-sm {
+        margin-top: var(--spacing-sm);
+      }
+      .mt-md {
+        margin-top: var(--spacing-md);
+      }
+      .mt-lg {
+        margin-top: var(--spacing-lg);
+      }
+
+      .mb-sm {
+        margin-bottom: var(--spacing-sm);
+      }
+      .mb-md {
+        margin-bottom: var(--spacing-md);
+      }
+      .mb-lg {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      /* ======================================
+         Responsive Adjustments
+         ====================================== */
+      @media (max-width: 768px) {
+        .container {
+          padding: var(--spacing-md);
+        }
+
+        .header {
+          padding: 0 var(--spacing-md);
+        }
+
+        .logo-container h1 {
+          font-size: 1.2rem;
+        }
+
+        /* Adjust button size for smaller screens */
+        :root {
+          --button-size: 45px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        /* For very small screens, move controls below video */
+        .video-section {
+          flex-direction: column;
+        }
+
+        .video-controls {
+          position: static;
+          transform: none;
+          flex-direction: row;
+          justify-content: center;
+          margin-top: var(--spacing-md);
+          flex-wrap: wrap;
+        }
+
+        :root {
+          --button-size: 40px;
+        }
+      }
+
+      /* Button tooltips for better UX */
+      button {
+        position: relative;
+      }
+
+      button::before {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: calc(100% + 10px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--primary);
+        color: var(--text-dark);
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--accent-transparent);
+      }
+
+      button:hover::before {
+        opacity: 1;
+      }
+
+      @media (max-width: 768px) {
+        button::before {
+          top: -30px;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+      }
+
+      .status-message {
+        display: none;
+      }
+      .loading-container {
+        display: none;
+      }
+
+      .controls {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        z-index: 100;
+      }
+      button {
+        min-width: 48px;
+        min-height: 48px;
+        touch-action: manipulation;
+      }
+      button::after {
+        pointer-events: none;
+      }
+      @media (hover: none) {
+        button:hover {
+          transform: none;
+          border-color: var(--accent);
+        }
+        button::before {
+          display: none;
+        }
+      }
+      .video-controls {
+        z-index: 1000;
+      }
+      button:active {
+        background-color: var(--accent-transparent);
+      }
+
+      .video-section {
+        position: relative;
+        z-index: 1;
+      }
+      @media (max-width: 480px) {
+        .video-container {
+          overflow: visible; /* Allows buttons to be visible outside the container */
+        }
+
+        .video-section {
+          flex-direction: column;
+          gap: var(--spacing-md); /* Adds space between video and controls */
+        }
+
+        .video-controls {
+          position: static;
+          transform: none;
+          flex-direction: row;
+          justify-content: center;
+          margin-top: 0; /* Adjust margin as needed */
+        }
+      }
+
+      button:active {
+        background-color: var(--accent-transparent);
+        transform: scale(0.95);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="logo-container">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="36"
+          height="36"
+          viewBox="0 0 24 24"
+          fill="#00a82e"
+          class="logo"
+        >
+          <path
+            d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 2c2.959 0 5.646 1.578 7.155 4H12V4zm0 16c-4.41 0-8-3.59-8-8s3.59-8 8-8c2.35 0 4.452.978 5.893 2.55L12 10v6z"
+          />
+        </svg>
+        <h1>FaceGuard</h1>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="video-section">
+        <div class="video-container">
+          <video id="video" autoplay playsinline></video>
+          <canvas id="canvas"></canvas>
+          <div class="face-counter">0</div>
+          <div class="video-controls">
+            <button id="toggleCam" data-tooltip="Turn On Camera">On</button>
+            <button
+              id="toggleDetection"
+              disabled
+              data-tooltip="Start Detection"
+            >
+              Det
+            </button>
+            <button
+              id="toggleRecognition"
+              disabled
+              data-tooltip="Start Recognition"
+            >
+              Rec
+            </button>
+            <button id="toggleOff" disabled data-tooltip="Turn Off Camera">
+              Off
+            </button>
+            <button id="loadDataset" data-tooltip="Load Dataset">Load</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="datasetStatus"></div>
+    </div>
+    <div class="status-message" style="display: none"></div>
+    <div class="loading-container" style="display: none">
+      <div class="loading">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.6.7/dist/face-api.min.js"></script>
+    <script>
+      let isCameraOn = false;
+      let isDetecting = false;
+      let isRecognizing = false;
+      let faceMatcher = null;
+      let faceDetectionInterval = null;
+
+      const video = document.getElementById("video");
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const datasetStatus = document.getElementById("datasetStatus");
+
+      const toggleCam = document.getElementById("toggleCam");
+      const toggleOff = document.getElementById("toggleOff");
+      const toggleDetection = document.getElementById("toggleDetection");
+      const toggleRecognition = document.getElementById("toggleRecognition");
+      const loadDataset = document.getElementById("loadDataset");
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Initialize button texts
+        toggleCam.textContent = "On";
+        toggleDetection.textContent = "Det";
+        toggleRecognition.textContent = "Rec";
+        toggleOff.textContent = "Off";
+        loadDataset.textContent = "Load";
+
+        // Initialize system
+        loadModels();
+      });
+
+      function addMobileEvents() {
+        document.querySelectorAll("button").forEach((button) => {
+          button.addEventListener(
+            "touchstart",
+            (e) => {
+              e.preventDefault();
+              button.click();
+              // Add visual feedback for touch
+              button.classList.add("active");
+              setTimeout(() => button.classList.remove("active"), 200);
+            },
+            { passive: false }
+          );
+        });
+      }
+      // Call this after DOMContentLoaded
+      addMobileEvents();
+      // Update model loading to include TinyYolov2
+      async function loadModels() {
+        showLoading();
+        showStatus("Loading AI models...");
+        try {
+          await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
+          await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
+          await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
+          showStatus("Models loaded successfully");
+        } catch (error) {
+          showStatus("Failed to load models", true);
+          console.error("Model loading error:", error);
+        } finally {
+          hideLoading();
+        }
+      }
+
+      function showLoading() {
+        const loading = document.querySelector(".loading-container");
+        if (loading) loading.style.display = "flex";
+      }
+
+      function hideLoading() {
+        document.querySelector(".loading-container").style.display = "none";
+      }
+
+      function showStatus(message, isError = false) {
+        const status = document.querySelector(".status-message");
+        if (status) {
+          status.style.display = "block";
+          status.textContent = message;
+          status.style.borderColor = isError ? "#ff4444" : "#00a82e";
+          setTimeout(() => (status.style.display = "none"), 5000);
+        }
+      }
+
+      async function startCamera() {
+        showStatus("Initializing camera...");
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 640, height: 480 },
+          });
+
+          video.srcObject = stream;
+          await new Promise((resolve) => {
+            video.onloadedmetadata = () => {
+              video.width = video.videoWidth;
+              video.height = video.videoHeight;
+              resolve();
+            };
+          });
+          isCameraOn = true;
+          toggleCam.disabled = true;
+          toggleOff.disabled = false;
+          toggleDetection.disabled = false;
+          showStatus("Camera ready");
+        } catch (error) {
+          showStatus("Camera access denied", true);
+        }
+      }
+
+      function stopCamera() {
+        const stream = video.srcObject;
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+          video.srcObject = null;
+        }
+        isCameraOn = false;
+
+        // Clear detection interval and reset states
+        clearInterval(faceDetectionInterval);
+        faceDetectionInterval = null;
+        isDetecting = false;
+        isRecognizing = false;
+
+        // Reset UI elements
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.querySelector(".face-counter").textContent = "0";
+
+        // Reset button states
+        toggleDetection.textContent = "Detect";
+        toggleRecognition.textContent = "Recognize";
+        toggleCam.disabled = false;
+        toggleOff.disabled = true;
+        toggleDetection.disabled = true;
+        toggleRecognition.disabled = true;
+      }
+
+      async function loadLabeledImages() {
+        datasetStatus.textContent = "Loading dataset...";
+        try {
+          const response = await fetch("/labels.json");
+          const labels = await response.json();
+
+          return Promise.all(
+            labels.map(async (label) => {
+              const descriptors = [];
+              for (let i = 1; i <= 2; i++) {
+                try {
+                  const img = await faceapi.fetchImage(
+                    `/labels/${label}/${i}.png`
+                  );
+                  const detection = await faceapi
+                    .detectSingleFace(
+                      img,
+                      new faceapi.TinyFaceDetectorOptions()
+                    )
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+
+                  if (detection) {
+                    descriptors.push(detection.descriptor);
+                  }
+                } catch (err) {
+                  console.warn(
+                    `Could not process image: ${label}/${i}.png`,
+                    err
+                  );
+                }
+              }
+              return new faceapi.LabeledFaceDescriptors(label, descriptors);
+            })
+          );
+        } catch (err) {
+          datasetStatus.textContent = "Failed to load dataset.";
+          console.error("Failed loading dataset:", err);
+          return [];
+        }
+      }
+
+      async function createFaceMatcher() {
+        showLoading();
+        showStatus("Loading dataset...");
+        try {
+          const labeledDescriptors = await loadLabeledImages();
+          faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
+          datasetStatus.textContent = `Dataset loaded (${labeledDescriptors.length} people)`;
+          toggleRecognition.disabled = false;
+          showStatus("Dataset loaded successfully");
+        } catch (error) {
+          showStatus("Dataset loading failed", true);
+        } finally {
+          hideLoading();
+        }
+      }
+
+      async function detectFaces() {
+        if (!isCameraOn || !isDetecting || video.videoWidth === 0) {
+          return;
+        }
+
+        try {
+          const options = new faceapi.TinyFaceDetectorOptions({
+            inputSize: 224,
+            scoreThreshold: 0.5,
+          });
+
+          const detections = await faceapi
+            .detectAllFaces(video, options)
+            .withFaceLandmarks()
+            .withFaceDescriptors();
+
+          // Update face counter immediately
+          const faceCount = detections.length;
+          document.querySelector(".face-counter").textContent = faceCount;
+
+          // Handle canvas dimensions only if video is valid
+          if (video.videoWidth > 0 && video.videoHeight > 0) {
+            if (
+              canvas.width !== video.videoWidth ||
+              canvas.height !== video.videoHeight
+            ) {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const resizedDetections = faceapi.resizeResults(detections, {
+              width: video.videoWidth,
+              height: video.videoHeight,
+            });
+
+            resizedDetections.forEach((detection) => {
+              const box = detection.detection.box;
+              ctx.strokeStyle = "green";
+              ctx.lineWidth = 2;
+              ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+              if (isRecognizing && faceMatcher) {
+                const bestMatch = faceMatcher.findBestMatch(
+                  detection.descriptor
+                );
+                const confidence = (1 - bestMatch.distance).toFixed(2);
+                ctx.fillStyle = "green";
+                ctx.font = "16px Poppins";
+                ctx.fillText(
+                  `${bestMatch.label} (${confidence})`,
+                  box.x,
+                  box.y - 5
+                );
+              }
+            });
+          }
+        } catch (error) {
+          // Reset counter and canvas on error
+          document.querySelector(".face-counter").textContent = "0";
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          if (!error.message.includes("Cannot read properties of null")) {
+            console.error("Detection error:", error);
+            showStatus("Detection error: " + error.message, true);
+          }
+        }
+      }
+      // Button event listeners
+      toggleCam.addEventListener("click", startCamera);
+      toggleOff.addEventListener("click", stopCamera);
+      loadDataset.addEventListener("click", createFaceMatcher);
+
+      toggleDetection.addEventListener("click", () => {
+        isDetecting = !isDetecting;
+        toggleDetection.textContent = isDetecting ? "Stop" : "Det";
+
+        if (isDetecting) {
+          faceDetectionInterval = setInterval(() => {
+            if (isCameraOn && video.videoWidth > 0 && video.videoHeight > 0) {
+              detectFaces();
+            }
+          }, 100);
+        } else {
+          clearInterval(faceDetectionInterval);
+          faceDetectionInterval = null;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          document.querySelector(".face-counter").textContent = "0";
+        }
+      });
+
+      toggleRecognition.addEventListener("click", () => {
+        isRecognizing = !isRecognizing;
+        toggleRecognition.textContent = isRecognizing ? "Stop" : "Rec";
+      });
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        video.width = 640;
+        video.height = 480;
+        // Initialize UI first
+        const status = document.querySelector(".status-message");
+        const loading = document.querySelector(".loading-container");
+
+        // Basic element check
+        if (!status || !loading) {
+          console.error("Critical UI elements missing!");
+          return;
+        }
+
+        try {
+          await loadModels();
+          console.log("System ready");
+          showStatus("System ready");
+        } catch (error) {
+          console.error("Initialization failed:", error);
+          showStatus("Initialization failed", true);
+        }
+      });
+    </script>
+  </body>
+</html>
