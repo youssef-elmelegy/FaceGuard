@@ -12,6 +12,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
+- [API Integration](#api-integration)
 - [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
@@ -28,6 +29,7 @@
 - Visual overlays for face bounding boxes and confidence metrics
 - Easy dataset management and model loading
 - Responsive layout and customizable UI
+- RESTful API for detecting, recognizing, and uploading face images to Cloudinary
 
 ---
 
@@ -45,6 +47,8 @@ To view a live demo, clone the repository and follow the [Installation](#install
 - [TensorFlow.js](https://www.tensorflow.org/js) – ML backend for browser
 - HTML5 / CSS3 / JavaScript (ES6+)
 - MediaDevices API for accessing webcam
+- Express.js for API routes
+- Cloudinary for cloud-based image storage
 
 ---
 
@@ -64,8 +68,6 @@ If you are using Node.js or bundlers:
 ```bash
 npm install
 ```
-
-Otherwise, you can run directly from the browser using a simple server.
 
 ### 3. Download Face-api.js Models
 
@@ -131,11 +133,51 @@ FaceGuard/
 ├── index.html
 ├── app.js
 ├── style.css
-├── /models               # Pretrained face-api.js models
-├── /labels               # Face images per person
-├── labels.json           # Dataset labels config
-├── screenshot.png        # Project preview
+├── server.js               # API backend (Node.js)
+├── /models                 # Pretrained face-api.js models
+├── /labels                 # Face images per person
+├── /uploads                # Uploaded images (if local backup)
+├── labels.json             # Dataset labels config
+├── screenshot.png          # Project preview
 └── README.md
+```
+
+---
+
+## API Integration
+
+The application also includes an API to detect and recognize faces from uploaded images, and upload results to Cloudinary.
+
+### Setup API
+
+1. Install backend dependencies:
+
+```bash
+npm install express multer cloudinary dotenv
+```
+
+2. Create a `.env` file in the root directory:
+
+```env
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+3. Start the API server:
+
+```bash
+node server.js
+```
+
+### Sample API Endpoints
+
+- `POST /detect-faces` – Detect faces in uploaded image
+
+> API examples:
+
+```
+[ Add your API request/response samples here ]
 ```
 
 ---
@@ -210,7 +252,3 @@ This project is licensed under the [MIT License](LICENSE).
 - Inspired by modern intelligent surveillance systems
 - UI enhancements inspired by responsive and mobile-first design principles
 - Loading animation by [SpinKit](https://tobiasahlin.com/spinkit/)
-
----
-
-Would you like me to generate the `LICENSE`, `package.json`, or a `labels.json` sample file for you as well?
