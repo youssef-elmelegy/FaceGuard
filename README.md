@@ -33,6 +33,8 @@
 
 ## Demo
 
+You can access the app [Here[(https://incredible-tiramisu-5a4156.netlify.app/)
+
 To view a live demo, clone the repository and follow the [Installation](#installation) steps below.
 
 ---
